@@ -7,11 +7,12 @@ package database
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, password)
-VALUES (?, ?) RETURNING id, username, password, created_at, updated_at
+VALUES (?, ?) RETURNING username, id, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -19,8 +20,31 @@ type CreateUserParams struct {
 	Password string `json:"password"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+type CreateUserRow struct {
+	Username  string       `json:"username"`
+	ID        int64        `json:"id"`
+	CreatedAt sql.NullTime `json:"created_at"`
+	UpdatedAt sql.NullTime `json:"updated_at"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Password)
+	var i CreateUserRow
+	err := row.Scan(
+		&i.Username,
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, username, password, created_at, updated_at FROM users WHERE username = ?
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
 	var i User
 	err := row.Scan(
 		&i.ID,
