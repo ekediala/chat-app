@@ -19,3 +19,35 @@ func (q *Queries) CreateChannel(ctx context.Context, name string) (Channel, erro
 	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
 	return i, err
 }
+
+const listChannels = `-- name: ListChannels :many
+SELECT id, name FROM channels
+`
+
+type ListChannelsRow struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func (q *Queries) ListChannels(ctx context.Context) ([]ListChannelsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listChannels)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListChannelsRow
+	for rows.Next() {
+		var i ListChannelsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

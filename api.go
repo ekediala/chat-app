@@ -10,17 +10,30 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/glebarez/go-sqlite"
+	"github.com/joho/godotenv"
 )
+
+type AppConfig struct {
+	JWT_SECRET string
+	ENV        string
+}
 
 type Server struct {
 	Db     *database.Queries
 	router *gin.Engine
+	config AppConfig
 }
 
 func NewServer() *Server {
 	workingDirectory, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	err = godotenv.Load()
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
 	}
 
 	sqliteLocation := workingDirectory + "/chat.db"
@@ -42,9 +55,21 @@ func NewServer() *Server {
 
 	router.Use(cors.New(config))
 
+	env := os.Getenv("ENV")
+
+	gin.SetMode(gin.ReleaseMode)
+
+	if env == "development" {
+		gin.SetMode(gin.DebugMode)
+	}
+
 	return &Server{
 		Db:     database.New(db),
 		router: router,
+		config: AppConfig{
+			JWT_SECRET: os.Getenv("JWT_SECRET"),
+			ENV:        env,
+		},
 	}
 }
 

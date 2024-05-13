@@ -5,17 +5,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jaswdr/faker/v2"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 )
 
 func createNewChannel(t *testing.T, channelName string) Channel {
-	fake := faker.New()
 
 	name := channelName
 
 	if name == "" {
-		name = fake.Lorem().Text(20)
+		name = faker.Name()
 	}
 
 	channel, err := testQueries.CreateChannel(context.Background(), name)
@@ -28,11 +27,13 @@ func createNewChannel(t *testing.T, channelName string) Channel {
 }
 
 func TestCreateChannel(t *testing.T) {
-	fake := faker.New()
-
-	name := fake.Lorem().Text(20)
+	name := faker.Name()
 	channel := createNewChannel(t, name)
 	require.NotEmpty(t, channel)
 	require.Equal(t, name, channel.Name)
 	require.WithinRange(t, channel.CreatedAt.Time, time.Now().Add(-5*time.Second), time.Now())
+}
+
+func TestListChannels(t *testing.T) {
+
 }

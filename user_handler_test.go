@@ -9,10 +9,52 @@ import (
 	"testing"
 
 	"github.com/ekediala/chat-app/utils"
-	"github.com/jaswdr/faker/v2"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func CreateAndLoginNewTestUser(t *testing.T) (token string, u interface{}) {
+	server := NewServer()
+
+	server.router.POST(utils.ComposeUserRoute(utils.LOGIN), server.login)
+	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.createUser)
+
+	w := httptest.NewRecorder()
+
+	user := LoginUserPayload{
+		Username: faker.Email(),
+		Password: faker.Password(),
+	}
+
+	body, _ := json.Marshal(user)
+
+	createUserReq, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.CREATE_USER), bytes.NewBuffer(body))
+	createUserReq.Header.Add("Content-Type", "application/json")
+
+	server.router.ServeHTTP(w, createUserReq)
+
+	w = httptest.NewRecorder()
+
+	loginReq, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.LOGIN), bytes.NewBuffer(body))
+	loginReq.Header.Add("Content-Type", "application/json")
+	server.router.ServeHTTP(w, loginReq)
+
+	body, err := io.ReadAll(w.Result().Body)
+	require.NoError(t, err)
+
+	defer w.Result().Body.Close()
+
+	var res utils.ResponsePayload
+	err = json.Unmarshal(body, &res)
+	require.NoError(t, err)
+
+	data, ok := res.Data.(map[string]interface{})
+	require.Equal(t, ok, true)
+	require.NotEmpty(t, data["user"])
+	require.NotEmpty(t, data["token"])
+	return data["token"].(string), data["user"]
+}
 
 func TestCreateUserRoute(t *testing.T) {
 
@@ -22,7 +64,12 @@ func TestCreateUserRoute(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	body := []byte(`{"username":"testuser4","password":"password"}`)
+	user := LoginUserPayload{
+		Username: faker.Email(),
+		Password: faker.Password(),
+	}
+
+	body, _ := json.Marshal(user)
 
 	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.CREATE_USER), bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
@@ -115,7 +162,17 @@ func TestLoginUserUserIncorrectPassword(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	body := []byte(`{"username":"testuser4","password":"password12"}`)
+	_, u := CreateAndLoginNewTestUser(t)
+
+	userMap, ok := u.(map[string]interface{})
+	require.True(t, ok)
+
+	user := LoginUserPayload{
+		Username: userMap["username"].(string),
+		Password: faker.Password(),
+	}
+
+	body, _ := json.Marshal(user)
 
 	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.LOGIN), bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
@@ -138,33 +195,7 @@ func TestLoginUserUserIncorrectPassword(t *testing.T) {
 }
 
 func TestLoginUserUserCorrectPassword(t *testing.T) {
-
-	server := NewServer()
-
-	server.router.POST(utils.ComposeUserRoute(utils.LOGIN), server.login)
-	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.createUser)
-
-	w := httptest.NewRecorder()
-
-	fake := faker.New()
-
-	user := LoginUserPayload{
-		Username: fake.Internet().Email(),
-		Password: fake.Lorem().Text(10),
-	}
-
-	body, _ := json.Marshal(user)
-
-	createUserReq, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.CREATE_USER), bytes.NewBuffer(body))
-	createUserReq.Header.Add("Content-Type", "application/json")
-
-	server.router.ServeHTTP(w, createUserReq)
-
-	w = httptest.NewRecorder()
-
-	loginReq, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.LOGIN), bytes.NewBuffer(body))
-	loginReq.Header.Add("Content-Type", "application/json")
-	server.router.ServeHTTP(w, loginReq)
-
-	assert.Equal(t, http.StatusOK, w.Code)
+	token, user := CreateAndLoginNewTestUser(t)
+	require.NotEmpty(t, token)
+	require.NotEmpty(t, user)
 }

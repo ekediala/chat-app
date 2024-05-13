@@ -5,17 +5,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jaswdr/faker/v2"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 )
 
 func createNewUser(t *testing.T, user CreateUserParams) CreateUserRow {
-	fake := faker.New()
 
 	if user == (CreateUserParams{}) {
 		user = CreateUserParams{
-			Username: fake.Lorem().Text(17),
-			Password: fake.Internet().Password(),
+			Username: faker.Email(),
+			Password: faker.Password(),
 		}
 	}
 
@@ -29,11 +28,10 @@ func createNewUser(t *testing.T, user CreateUserParams) CreateUserRow {
 }
 
 func TestCreateUser(t *testing.T) {
-	fake := faker.New()
 
 	user := CreateUserParams{
-		Username: fake.Lorem().Text(12),
-		Password: fake.Internet().Password(),
+		Username: faker.Email(),
+		Password: faker.Password(),
 	}
 
 	result := createNewUser(t, user)
@@ -42,11 +40,10 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	fake := faker.New()
 
 	user := CreateUserParams{
-		Username: fake.Lorem().Text(15),
-		Password: fake.Internet().Password(),
+		Username: faker.Email(),
+		Password: faker.Password(),
 	}
 
 	result := createNewUser(t, user)

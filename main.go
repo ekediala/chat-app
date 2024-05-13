@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+
 	slog.SetDefault(utils.Logger)
 
 	server := NewServer()

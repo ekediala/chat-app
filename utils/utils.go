@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,9 @@ func RespondWithError(c *gin.Context, code int, message string) {
 }
 
 func RespondWithJSON(c *gin.Context, code int, payload ResponsePayload) {
+	if payload.Message == "" {
+		payload.Message = http.StatusText(code)
+	}
 	c.JSON(code, payload)
 }
 
@@ -37,4 +41,8 @@ func CheckPasswordHash(password, hash string) bool {
 
 func ComposeUserRoute(path string) string {
 	return fmt.Sprintf("%s/%s", ROOT_USER_ROUTE, path)
+}
+
+func ComposeChannelRoute(path string) string {
+	return fmt.Sprintf("%s/%s", ROOT_CHANNEL_ROUTE, path)
 }

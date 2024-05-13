@@ -2,11 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
+	"time"
 
 	database "github.com/ekediala/chat-app/database/sqlc"
 	"github.com/ekediala/chat-app/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
@@ -24,6 +27,47 @@ type CreateUserPayload struct {
 type LoginUserPayload struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required,min=8"`
+}
+
+type LoginUserResponse struct {
+	User  utils.FrontendUser `json:"user"`
+	Token string             `json:"token"`
+}
+
+func (server *Server) createToken(user utils.FrontendUser) (string, error) {
+
+	secretKey := server.config.JWT_SECRET
+
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":  user.Username,                    // Subject (user identifier)
+		"iss":  "chat-app",                       // Issuer          // Audience (user role)
+		"exp":  time.Now().Add(time.Hour).Unix(), // Expiration time
+		"iat":  time.Now().Unix(),                // Issued at
+		"user": user,
+	})
+
+	return claims.SignedString([]byte(secretKey))
+
+}
+
+func (server *Server) verifyToken(tokenString string) (jwt.Claims, error) {
+	// Parse the token with the secret key
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(server.config.JWT_SECRET), nil
+	})
+
+	// Check for verification errors
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if the token is valid
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	// Return the verified token
+	return token.Claims, nil
 }
 
 func (server *Server) createUser(c *gin.Context) {
@@ -86,11 +130,26 @@ func (server *Server) login(c *gin.Context) {
 		return
 	}
 
-	userFromDb.Password = ""
+	userResponse := utils.FrontendUser{
+		ID:        userFromDb.ID,
+		Username:  user.Username,
+		CreatedAt: userFromDb.CreatedAt,
+		UpdatedAt: userFromDb.UpdatedAt,
+	}
+
+	token, err := server.createToken(userResponse)
+
+	if err != nil {
+		utils.RespondWithError(c, http.StatusInternalServerError, "Error logging user in. Please try again")
+		return
+	}
 
 	utils.RespondWithJSON(c, http.StatusOK, utils.ResponsePayload{
-		Message: OK,
-		Data:    userFromDb,
+		Message: http.StatusText(http.StatusOK),
+		Data: LoginUserResponse{
+			User:  userResponse,
+			Token: token,
+		},
 	})
 
 }
