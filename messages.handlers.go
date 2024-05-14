@@ -9,13 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ChannelRequestBody struct {
+type CreateMessageRequestBody struct {
 	ChannelID int64  `json:"channel_id" binding:"required"`
 	Message   string `json:"message" binding:"required"`
 }
 
+type ListChannelRequestParams struct {
+	ListRequestParams
+	ChannelID int64 `form:"channel_id" binding:"required,min=1"`
+}
+
 func (server *Server) CreateMessageHandler(c *gin.Context) {
-	var body ChannelRequestBody
+	var body CreateMessageRequestBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		utils.RespondWithError(c, http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity))
 		return
@@ -59,4 +64,29 @@ func (server *Server) CreateMessageHandler(c *gin.Context) {
 		Data:    message,
 		Message: http.StatusText(http.StatusCreated),
 	})
+}
+
+func (server *Server) ListMessagesByChannelIDHandler(c *gin.Context) {
+	var params ListChannelRequestParams
+
+	if err := c.ShouldBindQuery(&params); err != nil {
+		utils.FailedValidationResponse(c, err.Error())
+		return
+	}
+
+	messages, err := server.Db.ListMessagesByChannelID(c, database.ListMessagesByChannelIDParams{
+		Offset:    (params.Page - 1) * params.Limit,
+		Limit:     params.Limit,
+		ChannelID: params.ChannelID,
+	})
+
+	if err != nil {
+		utils.InternalServerResponse(c, "")
+		return
+	}
+
+	utils.RespondWithJSON(c, http.StatusOK, utils.ResponsePayload{
+		Data: messages,
+	})
+
 }

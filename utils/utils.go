@@ -50,3 +50,11 @@ func ComposeChannelRoute(path string) string {
 func ComposeMessageRoute(path string) string {
 	return fmt.Sprintf("%s/%s", ROOT_MESSAGES_ROUTE, path)
 }
+
+func FailedValidationResponse(c *gin.Context, message string) {
+	RespondWithError(c, http.StatusUnprocessableEntity, message)
+}
+
+func InternalServerResponse(c *gin.Context, message string) {
+	RespondWithError(c, http.StatusInternalServerError, message)
+}

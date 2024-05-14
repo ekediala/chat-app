@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createMessage = `-- name: CreateMessage :one
@@ -31,4 +32,57 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const listMessagesByChannelID = `-- name: ListMessagesByChannelID :many
+SELECT message.id, message.message, message.created_at, message.updated_at, user.id AS user_id, user.username AS user_name, channel.id AS channel_id, channel.name AS channel_name FROM messages message JOIN users user ON message.user_id = user.id JOIN channels channel ON message.channel_id = channel.id WHERE channel_id = ? ORDER BY message.created_at DESC LIMIT ? OFFSET ?
+`
+
+type ListMessagesByChannelIDParams struct {
+	ChannelID int64 `json:"channel_id"`
+	Limit     int64 `json:"limit"`
+	Offset    int64 `json:"offset"`
+}
+
+type ListMessagesByChannelIDRow struct {
+	ID          int64        `json:"id"`
+	Message     string       `json:"message"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	UpdatedAt   sql.NullTime `json:"updated_at"`
+	UserID      int64        `json:"user_id"`
+	UserName    string       `json:"user_name"`
+	ChannelID   int64        `json:"channel_id"`
+	ChannelName string       `json:"channel_name"`
+}
+
+func (q *Queries) ListMessagesByChannelID(ctx context.Context, arg ListMessagesByChannelIDParams) ([]ListMessagesByChannelIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMessagesByChannelID, arg.ChannelID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListMessagesByChannelIDRow{}
+	for rows.Next() {
+		var i ListMessagesByChannelIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Message,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.UserID,
+			&i.UserName,
+			&i.ChannelID,
+			&i.ChannelName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

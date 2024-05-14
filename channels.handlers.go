@@ -12,7 +12,7 @@ type CreateChannelPayload struct {
 	Name string `json:"name" binding:"required"`
 }
 
-type ListChannelsRequestParams struct {
+type ListRequestParams struct {
 	Limit int64 `form:"limit" binding:"required,min=0"`
 	Page  int64 `form:"page" binding:"required,min=1"`
 }
@@ -39,7 +39,7 @@ func (server *Server) CreateChannel(c *gin.Context) {
 }
 
 func (server *Server) ListChannels(c *gin.Context) {
-	var requestParams ListChannelsRequestParams
+	var requestParams ListRequestParams
 	if err := c.ShouldBindQuery(&requestParams); err != nil {
 		utils.RespondWithError(c, http.StatusUnprocessableEntity, err.Error())
 		return

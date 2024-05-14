@@ -47,4 +47,5 @@ func (server *Server) registerRoutes() {
 	server.router.POST(utils.ComposeMessageRoute(CREATE), server.RequiresAuth, server.CreateMessageHandler)
 	server.router.POST(utils.ComposeChannelRoute(CREATE), server.RequiresAuth, server.CreateChannel)
 	server.router.GET(utils.ComposeChannelRoute(LIST), server.RequiresAuth, server.ListChannels)
+	server.router.GET(utils.ComposeMessageRoute(LIST), server.RequiresAuth, server.ListMessagesByChannelIDHandler)
 }

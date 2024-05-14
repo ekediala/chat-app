@@ -37,7 +37,7 @@ func (q *Queries) GetChannelByID(ctx context.Context, id int64) (GetChannelByIDR
 }
 
 const listChannels = `-- name: ListChannels :many
-SELECT id, name FROM channels LIMIT ? OFFSET ?
+SELECT id, name FROM channels ORDER BY created_at ASC LIMIT ? OFFSET ?
 `
 
 type ListChannelsParams struct {
@@ -56,7 +56,7 @@ func (q *Queries) ListChannels(ctx context.Context, arg ListChannelsParams) ([]L
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListChannelsRow
+	items := []ListChannelsRow{}
 	for rows.Next() {
 		var i ListChannelsRow
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {
