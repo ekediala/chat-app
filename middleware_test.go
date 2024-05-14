@@ -69,7 +69,7 @@ func TestValidAuthorization(t *testing.T) {
 
 		jwtClaims := claims.(jwt.MapClaims)
 
-		user := jwtClaims["user"]
+		user := jwtClaims[USER_JWT_KEY]
 
 		utils.RespondWithJSON(ctx, http.StatusOK, utils.ResponsePayload{
 			Data:    user,

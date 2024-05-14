@@ -46,3 +46,7 @@ func ComposeUserRoute(path string) string {
 func ComposeChannelRoute(path string) string {
 	return fmt.Sprintf("%s/%s", ROOT_CHANNEL_ROUTE, path)
 }
+
+func ComposeMessageRoute(path string) string {
+	return fmt.Sprintf("%s/%s", ROOT_MESSAGES_ROUTE, path)
+}

@@ -20,6 +20,22 @@ func (q *Queries) CreateChannel(ctx context.Context, name string) (Channel, erro
 	return i, err
 }
 
+const getChannelByID = `-- name: GetChannelByID :one
+SELECT id, name FROM channels WHERE id = ?
+`
+
+type GetChannelByIDRow struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func (q *Queries) GetChannelByID(ctx context.Context, id int64) (GetChannelByIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getChannelByID, id)
+	var i GetChannelByIDRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const listChannels = `-- name: ListChannels :many
 SELECT id, name FROM channels
 `

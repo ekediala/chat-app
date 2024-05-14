@@ -2,14 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
-	"time"
 
 	database "github.com/ekediala/chat-app/database/sqlc"
 	"github.com/ekediala/chat-app/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
@@ -34,43 +31,7 @@ type LoginUserResponse struct {
 	Token string             `json:"token"`
 }
 
-func (server *Server) createToken(user utils.FrontendUser) (string, error) {
-
-	secretKey := server.config.JWT_SECRET
-
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":  user.Username,                    // Subject (user identifier)
-		"iss":  "chat-app",                       // Issuer          // Audience (user role)
-		"exp":  time.Now().Add(time.Hour).Unix(), // Expiration time
-		"iat":  time.Now().Unix(),                // Issued at
-		"user": user,
-	})
-
-	return claims.SignedString([]byte(secretKey))
-
-}
-
-func (server *Server) verifyToken(tokenString string) (jwt.Claims, error) {
-	// Parse the token with the secret key
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(server.config.JWT_SECRET), nil
-	})
-
-	// Check for verification errors
-	if err != nil {
-		return nil, err
-	}
-
-	// Check if the token is valid
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-
-	// Return the verified token
-	return token.Claims, nil
-}
-
-func (server *Server) createUser(c *gin.Context) {
+func (server *Server) CreateUser(c *gin.Context) {
 	var user CreateUserPayload
 
 	if err := c.ShouldBindJSON(&user); err != nil {

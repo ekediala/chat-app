@@ -13,9 +13,9 @@ const (
 	FORBIDDEN = "Invalid token. Please try again later."
 )
 
-type ClaimsKey string
+type claimsKeyType string
 
-var claimsKey ClaimsKey = "claims"
+var claimsKey claimsKeyType = "claims"
 
 func (server *Server) RequiresAuth(c *gin.Context) {
 	bearerToken := c.GetHeader("Authorization")

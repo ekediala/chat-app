@@ -18,7 +18,7 @@ func CreateAndLoginNewTestUser(t *testing.T) (token string, u interface{}) {
 	server := NewServer()
 
 	server.router.POST(utils.ComposeUserRoute(utils.LOGIN), server.login)
-	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.createUser)
+	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.CreateUser)
 
 	w := httptest.NewRecorder()
 
@@ -60,7 +60,7 @@ func TestCreateUserRoute(t *testing.T) {
 
 	server := NewServer()
 
-	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.createUser)
+	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.CreateUser)
 
 	w := httptest.NewRecorder()
 
@@ -94,7 +94,7 @@ func TestCreateUserRouteInvalidData(t *testing.T) {
 
 	server := NewServer()
 
-	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.createUser)
+	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.CreateUser)
 
 	w := httptest.NewRecorder()
 

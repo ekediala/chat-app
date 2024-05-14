@@ -5,11 +5,12 @@ import (
 )
 
 const (
-	ROOT_USER_ROUTE    = "/users"
-	CREATE_USER        = "create"
-	LOGIN              = "login"
-	ROOT_CHANNEL_ROUTE = "/channels"
-	CREATE             = "create"
+	ROOT_USER_ROUTE     = "/users"
+	CREATE_USER         = "create"
+	LOGIN               = "login"
+	ROOT_CHANNEL_ROUTE  = "/channels"
+	CREATE              = "create"
+	ROOT_MESSAGES_ROUTE = "/messages"
 )
 
 type FrontendUser struct {

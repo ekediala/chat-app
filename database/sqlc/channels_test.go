@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createNewChannel(t *testing.T, channelName string) Channel {
+func CreateNewChannel(t *testing.T, channelName string) Channel {
 
 	name := channelName
 
@@ -28,7 +28,7 @@ func createNewChannel(t *testing.T, channelName string) Channel {
 
 func TestCreateChannel(t *testing.T) {
 	name := faker.Name()
-	channel := createNewChannel(t, name)
+	channel := CreateNewChannel(t, name)
 	require.NotEmpty(t, channel)
 	require.Equal(t, name, channel.Name)
 	require.WithinRange(t, channel.CreatedAt.Time, time.Now().Add(-5*time.Second), time.Now())
@@ -36,4 +36,13 @@ func TestCreateChannel(t *testing.T) {
 
 func TestListChannels(t *testing.T) {
 
+}
+
+func TestGetChannelByID(t *testing.T) {
+	name := faker.Name()
+	channel := CreateNewChannel(t, name)
+
+	dbChannel, err := testQueries.GetChannelByID(context.Background(), channel.ID)
+	require.NoError(t, err)
+	require.Equal(t, dbChannel.ID, channel.ID)
 }
