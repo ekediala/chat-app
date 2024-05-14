@@ -40,3 +40,11 @@ func (server *Server) RequiresAuth(c *gin.Context) {
 
 	c.Next()
 }
+
+func (server *Server) registerRoutes() {
+	server.router.POST(utils.ComposeUserRoute(CREATE), server.CreateUser)
+	server.router.POST(utils.ComposeUserRoute(LOGIN), server.login)
+	server.router.POST(utils.ComposeMessageRoute(CREATE), server.RequiresAuth, server.CreateMessageHandler)
+	server.router.POST(utils.ComposeChannelRoute(CREATE), server.RequiresAuth, server.CreateChannel)
+	server.router.GET(utils.ComposeChannelRoute(LIST), server.RequiresAuth, server.ListChannels)
+}

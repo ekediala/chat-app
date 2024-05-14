@@ -35,7 +35,18 @@ func TestCreateChannel(t *testing.T) {
 }
 
 func TestListChannels(t *testing.T) {
+	for i := 0; i < 5; i++ {
+		name := faker.Name()
+		CreateNewChannel(t, name)
+	}
 
+	channels, err := testQueries.ListChannels(context.Background(), ListChannelsParams{
+		Limit:  5,
+		Offset: 0,
+	})
+
+	require.NoError(t, err)
+	require.Len(t, channels, 5)
 }
 
 func TestGetChannelByID(t *testing.T) {

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,7 +15,7 @@ import (
 
 func TestMessagesCreate(t *testing.T) {
 	server := NewServer()
-	url := utils.ComposeMessageRoute(utils.CREATE)
+	url := utils.ComposeMessageRoute(CREATE)
 	server.router.POST(url, server.RequiresAuth, server.CreateMessageHandler)
 	token, _ := CreateAndLoginNewTestUser(t)
 
@@ -32,8 +31,7 @@ func TestMessagesCreate(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", url, bytes.NewBuffer(body))
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("Content-Type", "application/json")
+	server.AddHeaders(req, token)
 	server.router.ServeHTTP(w, req)
 	require.Equal(t, http.StatusCreated, w.Code)
 }

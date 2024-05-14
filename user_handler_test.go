@@ -17,8 +17,8 @@ import (
 func CreateAndLoginNewTestUser(t *testing.T) (token string, u interface{}) {
 	server := NewServer()
 
-	server.router.POST(utils.ComposeUserRoute(utils.LOGIN), server.login)
-	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.CreateUser)
+	server.router.POST(utils.ComposeUserRoute(LOGIN), server.login)
+	server.router.POST(utils.ComposeUserRoute(CREATE), server.CreateUser)
 
 	w := httptest.NewRecorder()
 
@@ -29,14 +29,14 @@ func CreateAndLoginNewTestUser(t *testing.T) (token string, u interface{}) {
 
 	body, _ := json.Marshal(user)
 
-	createUserReq, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.CREATE_USER), bytes.NewBuffer(body))
+	createUserReq, _ := http.NewRequest("POST", utils.ComposeUserRoute(CREATE), bytes.NewBuffer(body))
 	createUserReq.Header.Add("Content-Type", "application/json")
 
 	server.router.ServeHTTP(w, createUserReq)
 
 	w = httptest.NewRecorder()
 
-	loginReq, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.LOGIN), bytes.NewBuffer(body))
+	loginReq, _ := http.NewRequest("POST", utils.ComposeUserRoute(LOGIN), bytes.NewBuffer(body))
 	loginReq.Header.Add("Content-Type", "application/json")
 	server.router.ServeHTTP(w, loginReq)
 
@@ -60,7 +60,7 @@ func TestCreateUserRoute(t *testing.T) {
 
 	server := NewServer()
 
-	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.CreateUser)
+	server.router.POST(utils.ComposeUserRoute(CREATE), server.CreateUser)
 
 	w := httptest.NewRecorder()
 
@@ -71,7 +71,7 @@ func TestCreateUserRoute(t *testing.T) {
 
 	body, _ := json.Marshal(user)
 
-	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.CREATE_USER), bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(CREATE), bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 
 	server.router.ServeHTTP(w, req)
@@ -94,13 +94,13 @@ func TestCreateUserRouteInvalidData(t *testing.T) {
 
 	server := NewServer()
 
-	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.CreateUser)
+	server.router.POST(utils.ComposeUserRoute(CREATE), server.CreateUser)
 
 	w := httptest.NewRecorder()
 
 	body := []byte(`{"username":"","password":"password"}`)
 
-	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.CREATE_USER), bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(CREATE), bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 
 	server.router.ServeHTTP(w, req)
@@ -111,13 +111,13 @@ func TestLoginUserRouteInvalidData(t *testing.T) {
 
 	server := NewServer()
 
-	server.router.POST(utils.ComposeUserRoute(utils.LOGIN), server.login)
+	server.router.POST(utils.ComposeUserRoute(LOGIN), server.login)
 
 	w := httptest.NewRecorder()
 
 	body := []byte(`{"username":"","password":"password"}`)
 
-	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.LOGIN), bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(LOGIN), bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 
 	server.router.ServeHTTP(w, req)
@@ -128,13 +128,13 @@ func TestLoginUserUserNotExist(t *testing.T) {
 
 	server := NewServer()
 
-	server.router.POST(utils.ComposeUserRoute(utils.LOGIN), server.login)
+	server.router.POST(utils.ComposeUserRoute(LOGIN), server.login)
 
 	w := httptest.NewRecorder()
 
 	body := []byte(`{"username":"abracadabrawhatever","password":"passwordghdgdgh"}`)
 
-	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.LOGIN), bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(LOGIN), bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 
 	server.router.ServeHTTP(w, req)
@@ -158,7 +158,7 @@ func TestLoginUserUserIncorrectPassword(t *testing.T) {
 
 	server := NewServer()
 
-	server.router.POST(utils.ComposeUserRoute(utils.LOGIN), server.login)
+	server.router.POST(utils.ComposeUserRoute(LOGIN), server.login)
 
 	w := httptest.NewRecorder()
 
@@ -174,7 +174,7 @@ func TestLoginUserUserIncorrectPassword(t *testing.T) {
 
 	body, _ := json.Marshal(user)
 
-	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(utils.LOGIN), bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", utils.ComposeUserRoute(LOGIN), bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 
 	server.router.ServeHTTP(w, req)

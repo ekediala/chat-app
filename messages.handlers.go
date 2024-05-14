@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 
 	database "github.com/ekediala/chat-app/database/sqlc"
@@ -28,10 +27,7 @@ func (server *Server) CreateMessageHandler(c *gin.Context) {
 		return
 	}
 
-	utils.Logger.Info("create message", "userIdType", fmt.Sprintf("%t", user["id"]))
-
 	userId, ok := user["id"].(int64)
-	utils.Logger.Info("create message", "userId", userId)
 	if !ok {
 		utils.RespondWithError(c, http.StatusExpectationFailed, http.StatusText(http.StatusExpectationFailed))
 		return

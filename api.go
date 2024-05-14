@@ -1,95 +1,22 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
-	"os"
+	"net/http"
 	"time"
 
-	database "github.com/ekediala/chat-app/database/sqlc"
 	"github.com/ekediala/chat-app/utils"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/glebarez/go-sqlite"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 )
-
-type AppConfig struct {
-	JWT_SECRET string
-	ENV        string
-}
-
-type Server struct {
-	Db     *database.Queries
-	router *gin.Engine
-	config AppConfig
-}
 
 const (
 	USER_JWT_KEY string = "user"
+	LOGIN        string = "login"
+	CREATE       string = "create"
+	LIST         string = "list"
 )
-
-func NewServer() *Server {
-	workingDirectory, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = godotenv.Load()
-
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	sqliteLocation := workingDirectory + "/chat.db"
-
-	db, err := sql.Open("sqlite", sqliteLocation)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	router := gin.Default()
-
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"}
-	// config.AllowOrigins = []string{"http://google.com", "http://facebook.com"}
-	// config.AllowAllOrigins = true
-
-	router.Use(cors.New(config))
-
-	env := os.Getenv("ENV")
-
-	gin.SetMode(gin.ReleaseMode)
-
-	if env == "development" {
-		gin.SetMode(gin.DebugMode)
-	}
-
-	return &Server{
-		Db:     database.New(db),
-		router: router,
-		config: AppConfig{
-			JWT_SECRET: os.Getenv("JWT_SECRET"),
-			ENV:        env,
-		},
-	}
-}
-
-func (server *Server) registerRoutes() {
-	server.router.POST(utils.ComposeUserRoute(utils.CREATE_USER), server.CreateUser)
-	server.router.POST(utils.ComposeUserRoute(utils.LOGIN), server.login)
-
-}
-
-func (api *Server) Start() error {
-	api.registerRoutes()
-	return api.router.Run(":8080")
-}
 
 func (server *Server) createToken(user utils.FrontendUser) (string, error) {
 
@@ -154,4 +81,9 @@ func getCurrentUser(c *gin.Context) (userMap map[string]interface{}, ok bool) {
 	userMap["id"] = int64(userId)
 
 	return userMap, ok
+}
+
+func (server *Server) AddHeaders(req *http.Request, token string) {
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Content-Type", "application/json")
 }

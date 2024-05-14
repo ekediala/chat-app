@@ -37,16 +37,21 @@ func (q *Queries) GetChannelByID(ctx context.Context, id int64) (GetChannelByIDR
 }
 
 const listChannels = `-- name: ListChannels :many
-SELECT id, name FROM channels
+SELECT id, name FROM channels LIMIT ? OFFSET ?
 `
+
+type ListChannelsParams struct {
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+}
 
 type ListChannelsRow struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
-func (q *Queries) ListChannels(ctx context.Context) ([]ListChannelsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listChannels)
+func (q *Queries) ListChannels(ctx context.Context, arg ListChannelsParams) ([]ListChannelsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listChannels, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

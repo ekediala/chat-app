@@ -17,12 +17,12 @@ const (
 )
 
 type CreateUserPayload struct {
-	Username string `json:"username" binding:"required"`
+	Username string `json:"username" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 }
 
 type LoginUserPayload struct {
-	Username string `json:"username" binding:"required"`
+	Username string `json:"username" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 }
 
